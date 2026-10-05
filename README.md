@@ -14,6 +14,7 @@ AB1571AM 耳机互操作性研究与 macOS 工具：弹窗、设备信息和双�
 - [工具使用说明](docs/TOOLS.md)：安装、编译、离线自检、双耳查询和受限修复命令。
 - [源码](tools/)与[构建/自检脚本](scripts/)：可以在 Mac 上自行审阅、构建和运行。
 - [第三方软件与来源](docs/SOFTWARE.md)：Flycc 下载入口及版本记录；不转载厂家安装包。
+- [编程 Agent 提示词](prompts/README.md)：给 Claude Code、Codex 等 agent 的启动模板，以及诊断、固件适配、平台移植、真机验证、发布和交接流程。
 
 ```sh
 # 在仓库根目录运行；只编译和离线检查，不连接耳机。
@@ -30,6 +31,12 @@ bash scripts/check.sh
 | [协议笔记](docs/PROTOCOL.md) | RACE 报文边界、双耳转发、写入确认及运行缓存的研究注意事项 |
 | [发布范围、隐私与法律说明](docs/PUBLICATION_AND_LEGAL.md) | 脱敏规则、第三方权利、责任边界及材料使用限制 |
 | [来源](docs/SOURCES.md) | 厂商说明、原始协议研究和法律政策来源 |
+
+## 用编程 Agent 使用与二次开发
+
+用 Claude Code、Codex 或其他 agent 打开本仓库，复制 [prompts/README.md](prompts/README.md) 的通用启动提示词，填入设备、目标、系统和授权范围；再按任务选择一个模板。共用项目规则在 [AGENTS.md](AGENTS.md)，[CLAUDE.md](CLAUDE.md) 引入同一份内容。
+
+新固件默认从只读证据和离线检查开始。提示词不会替代协议证据、硬件访问授权或真机验证，也不会使所有同芯片设备自动兼容。
 
 ## 本次案例能说明什么
 

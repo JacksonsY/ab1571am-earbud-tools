@@ -2,6 +2,8 @@
 /*
 !/.gitignore
 !/README.md
+!/AGENTS.md
+!/CLAUDE.md
 !/docs/
 /docs/*
 !/docs/TUTORIAL.md
@@ -26,3 +28,12 @@
 /scripts/*
 !/scripts/build-macos.sh
 !/scripts/check.sh
+!/prompts/
+/prompts/*
+!/prompts/README.md
+!/prompts/01-device-diagnosis.md
+!/prompts/02-firmware-adaptation.md
+!/prompts/03-platform-port.md
+!/prompts/04-controlled-validation.md
+!/prompts/05-review-and-publish.md
+!/prompts/06-handoff.md
