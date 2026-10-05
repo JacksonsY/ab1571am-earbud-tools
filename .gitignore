@@ -1,0 +1,11 @@
+# Publish only the explicitly reviewed documentation paths.
+/*
+!/.gitignore
+!/README.md
+!/docs/
+/docs/*
+!/docs/TUTORIAL.md
+!/docs/CASE_STUDY.md
+!/docs/PROTOCOL.md
+!/docs/PUBLICATION_AND_LEGAL.md
+!/docs/SOURCES.md
