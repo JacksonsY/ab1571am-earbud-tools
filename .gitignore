@@ -1,4 +1,4 @@
-# Publish only the explicitly reviewed documentation paths.
+# Publish only explicitly reviewed documentation and source paths.
 /*
 !/.gitignore
 !/README.md
@@ -9,3 +9,16 @@
 !/docs/PROTOCOL.md
 !/docs/PUBLICATION_AND_LEGAL.md
 !/docs/SOURCES.md
+!/docs/TOOLS.md
+!/docs/SOFTWARE.md
+!/tools/
+/tools/*
+!/tools/inspect-earbud.swift
+!/tools/inspect_nvdm.py
+!/tools/wrap_thumb.py
+!/tools/check_menu_artwork.swift
+!/tools/hold_audio_link.swift
+!/scripts/
+/scripts/*
+!/scripts/build-macos.sh
+!/scripts/check.sh

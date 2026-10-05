@@ -4,7 +4,20 @@
 
 本仓库提供可迁移的研究方法，并记录一副 AB1571AM 耳机上的验证案例。**研究方法可以复用，具体参数不能视为所有同芯片设备的通用设置。** 本项目与 Apple、Airoha 或耳机及伴侣应用厂商无隶属、合作或认证关系。
 
-> Documentation-only research on Bluetooth earbud interoperability. The case study covers one device pair and one firmware build; it is not a universal unlock or authenticity-verification tool.
+> Bluetooth earbud interoperability research with macOS tools and source code. Configuration writes are restricted to one reviewed firmware profile; this is not a universal unlock or authenticity-verification tool.
+
+## 配套软件和源码
+
+- [下载发布版本](https://github.com/JacksonsY/earbud-interop-research/releases/latest)：包含 Mac 命令行程序、源码和使用说明；请查看对应架构及系统要求。
+- [工具使用说明](docs/TOOLS.md)：安装、编译、离线自检、双耳查询和受限修复命令。
+- [源码](tools/)与[构建/自检脚本](scripts/)：可以在 Mac 上自行审阅、构建和运行。
+- [第三方软件与来源](docs/SOFTWARE.md)：Flycc 下载入口及版本记录；不转载厂家安装包。
+
+```sh
+# 在仓库根目录运行；只编译和离线检查，不连接耳机。
+bash scripts/build-macos.sh
+bash scripts/check.sh
+```
 
 ## 从哪里开始
 
@@ -28,7 +41,9 @@
 
 ## 公开内容与使用范围
 
-本仓库仅发布重新整理的文字教程和研究结论，不包含个人修复包、厂家固件、配置区镜像、APK、蓝牙密钥、真实序列号、设备地址、个人截图或原始会话。没有提供自动写入硬件、刷固件或批量改身份的程序。
+本仓库发布重新整理的教程、研究结论和脱敏配套代码，不包含个人修复包、厂家固件、配置区镜像、APK、蓝牙密钥、真实序列号、设备地址、个人截图或原始会话。主工具具有受限配置写入及指定缓存同步能力，不能把它当作纯只读程序；它没有 MCU 擦除/刷写或任意序列号改写功能。
+
+运行产生的 `work/`、日志和本地编译产物不进入 Git 提交。不要把自己的运行备份当作发布包上传。
 
 研究对象应当是本人合法持有或明确获授权的设备。不得用本资料冒充官方认证、伪造序列号、申请不实保修、隐瞒产品来源进行销售，或访问他人的设备与账户。自用、研究目的和免责声明都不能自动免除法律责任；详细边界见[法律说明](docs/PUBLICATION_AND_LEGAL.md)。
 
