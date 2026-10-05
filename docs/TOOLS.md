@@ -2,7 +2,7 @@
 
 ## 下载或自行构建
 
-[GitHub Releases](https://github.com/JacksonsY/earbud-interop-research/releases) 提供源码与 Mac 命令行程序的合并 ZIP。首个二进制发布面向 Apple Silicon，最低部署目标为 macOS 26.0，在 macOS 26.5.1 上编译和离线验证；它不是 iOS 或安卓安装包。
+[GitHub Releases](https://github.com/JacksonsY/ab1571am-earbud-tools/releases) 提供源码与 Mac 命令行程序的合并 ZIP。首个二进制发布面向 Apple Silicon，最低部署目标为 macOS 26.0，在 macOS 26.5.1 上编译和离线验证；它不是 iOS 或安卓安装包。
 
 程序没有 Developer ID 公证。若系统阻止下载的二进制，请审阅源码后使用 Apple 开发工具在本机编译，不需要关闭系统安全保护。源码构建需要 Xcode Command Line Tools；若未安装，可使用 `xcode-select --install`。以下命令在仓库根目录执行：
 
