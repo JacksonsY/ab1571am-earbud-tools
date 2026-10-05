@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5ef">
+  <meta name="description" content="AB1571AM 耳机互操作性研究与 macOS 工具。理解弹窗、双耳配置和设备信息上报，用可核对的步骤排查问题。">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AB1571AM Earbud Tools · 看懂连接背后">
+  <meta property="og:description" content="一份有边界的研究，一套可核对的工具。面向 AB1571AM 耳机的 macOS 工具与互操作性记录。">
+  <meta property="og:url" content="https://jacksonsy.github.io/ab1571am-earbud-tools/">
+  <link rel="canonical" href="https://jacksonsy.github.io/ab1571am-earbud-tools/">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231c3e32'/%3E%3Cpath d='M15 43 28 18h8l13 25M21 33h22M27 43h10' fill='none' stroke='%23d1f27e' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="site.css">
+  <script src="site.js" defer></script>
+  <title>AB1571AM Earbud Tools · 看懂连接背后</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="#" aria-label="AB1571AM Earbud Tools 首页"><span class="brand-mark" aria-hidden="true">a<span>/</span></span><span><strong>AB1571AM</strong><small>EARBUD TOOLS</small></span></a>
+      <button class="menu-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="展开导航"><span></span><span></span></button>
+      <nav id="site-nav" aria-label="主导航">
+        <a href="#findings">研究记录</a><a href="#toolkit">工具下载</a><a href="#guide">开始使用</a>
+        <a class="nav-repo" href="https://github.com/JacksonsY/ab1571am-earbud-tools">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero shell" aria-labelledby="hero-heading">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="short-rule"></span>INDEPENDENT RESEARCH · 001</div>
+        <h1 id="hero-heading">看见弹窗，<br><span>也看懂背后。</span></h1>
+        <p class="hero-description">面向 AB1571AM 耳机的 macOS 工具与互操作性研究。把配对、双耳配置和系统显示，拆成有证据、可核对的步骤。</p>
+        <div class="hero-actions"><a class="button button-primary" href="https://github.com/JacksonsY/ab1571am-earbud-tools/releases/latest">获取 macOS 工具</a><a class="text-link" href="#findings">阅读研究记录</a></div>
+        <div class="hero-meta"><span>v0.1.0</span><span>Apple Silicon</span><span>macOS 26+</span></div>
+        <p class="scope-note">一副设备 · 一个固件版本 · 明确的适用边界</p>
+      </div>
+
+      <div class="field-diagram">
+        <div class="diagram-heading"><span>THE CONNECTION, DECODED</span><span class="index-label">FIG. 01</span></div>
+        <svg class="protocol-map" viewBox="0 0 560 450" role="img" aria-labelledby="map-title map-desc">
+          <title id="map-title">双耳、配置与系统界面的关系示意图</title>
+          <desc id="map-desc">当前连接耳和另一耳分别核对配置，通过固件运行状态影响主机识别。连线为研究示意，不表示正在连接设备。</desc>
+          <defs><pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#c6cfbf"/></pattern></defs>
+          <rect width="560" height="450" fill="url(#map-grid)"/>
+          <g fill="none" stroke="#62876d" stroke-width="1.5"><path d="M145 118V157Q145 177 165 177H230V202"/><path d="M415 118V157Q415 177 395 177H330V202"/><path d="M280 302V356"/><path d="M145 89H83V386H185" stroke-dasharray="4 7" opacity=".5"/></g>
+          <g fill="#f5f5ef" stroke="#315d48" stroke-width="1.5"><rect x="65" y="46" width="160" height="72" rx="8"/><rect x="335" y="46" width="160" height="72" rx="8"/></g>
+          <g class="map-label"><text x="85" y="71">LOCAL</text><text x="355" y="71">AWS PEER</text></g>
+          <g class="map-title"><text x="85" y="99">当前连接耳</text><text x="355" y="99">另一耳</text></g>
+          <g fill="#315d48"><circle cx="204" cy="68" r="3"/><circle cx="474" cy="68" r="3"/></g>
+          <rect x="178" y="194" width="204" height="116" rx="12" fill="#1c3e32"/>
+          <g stroke="#315d48" stroke-width="3"><path d="M196 181v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13M196 310v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13M165 212h13m-13 20h13m-13 20h13m-13 20h13m-13 20h13M382 212h13m-13 20h13m-13 20h13m-13 20h13m-13 20h13"/></g>
+          <text x="200" y="221" class="map-chip-small">CONFIG</text><text x="200" y="261" class="map-chip-title">AB1571AM</text><text x="200" y="287" class="map-chip-small">READ BACK</text>
+          <g class="map-side-note"><text x="415" y="238">配置值</text><text x="415" y="260">≠</text><text x="415" y="281">最终表现</text></g>
+          <circle cx="280" cy="346" r="4" fill="#315d48"/>
+          <rect x="185" y="363" width="190" height="55" rx="7" fill="#f5f5ef" stroke="#315d48" stroke-width="1.5"/>
+          <text x="280" y="397" text-anchor="middle" class="map-title">系统界面</text>
+          <text x="42" y="296" transform="rotate(-90 42 296)" class="map-label">VERIFY BOTH</text>
+          <g stroke="#91a68c" stroke-width="1"><path d="M21 21h12m-6-6v12M527 429h12m-6-6v12"/></g>
+        </svg>
+        <div class="diagram-foot"><span>双耳角色可变，结果分别核对。</span><span>研究示意 / 非实时连接</span></div>
+        <span class="diagram-stamp" aria-hidden="true">FIELD<br>NOTES</span>
+      </div>
+    </section>
+
+    <section id="findings" class="findings shell" aria-labelledby="findings-heading">
+      <div class="section-kicker"><span id="findings-heading">案例进展</span><span>OBSERVED, NOT ASSUMED</span></div>
+      <div class="finding-grid">
+        <article><span class="finding-number">01</span><h2>近距离弹窗</h2><p><span class="status-symbol" aria-hidden="true">✓</span> 用户实测恢复</p></article>
+        <article><span class="finding-number">02</span><h2>图片与电量</h2><p><span class="status-symbol" aria-hidden="true">✓</span> 重新配对后恢复</p></article>
+        <article><span class="finding-number">03</span><h2>设备信息</h2><p><span class="status-symbol" aria-hidden="true">✓</span> 原有型号与序列号恢复上报</p></article>
+        <article class="finding-open"><span class="finding-number">04</span><h2>充电盒声音</h2><p><span class="status-symbol" aria-hidden="true">◌</span> 系统开关仍待解决</p></article>
+      </div>
+      <p class="finding-caption">以上结果来自一副设备、一个构建版本。入口可见，不代表对应的高级功能已经实现或验证。</p>
+    </section>
+
+    <section class="layers-section" aria-labelledby="layers-heading">
+      <div class="shell layers-layout" id="layers" data-tabs data-selected="layer-config">
+        <div class="layers-intro"><div class="eyebrow">01 / UNDERSTAND THE SYSTEM</div><h2 id="layers-heading">三个层面，<br><span>一条证据链。</span></h2><p>写入成功只是开始。设备保存的值、运行中的状态和手机显示的结果，需要分别验证。</p><a class="light-link" href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/PROTOCOL.md">查看完整协议笔记</a></div>
+        <div class="layer-workspace">
+          <div class="layer-tabs" role="tablist" aria-label="探索三个状态层面">
+            <button id="tab-config" role="tab" aria-selected="true" aria-controls="layer-config" data-panel="layer-config"><span>01</span>持久配置</button>
+            <button id="tab-runtime" role="tab" aria-selected="false" aria-controls="layer-runtime" tabindex="-1" data-panel="layer-runtime"><span>02</span>运行状态</button>
+            <button id="tab-interface" role="tab" aria-selected="false" aria-controls="layer-interface" tabindex="-1" data-panel="layer-interface"><span>03</span>系统界面</button>
+          </div>
+          <div class="layer-panel" id="layer-config" role="tabpanel" aria-labelledby="tab-config" tabindex="0"><div class="panel-topline"><span>NON-VOLATILE CONFIGURATION</span><span class="panel-tag">READ FIRST</span></div><h3>参数已经保存了吗？</h3><p>先核对固件，再读取两耳原值。只在已研究的范围内修改，每次实际写入都保留原值记录并重新读回。</p><div class="data-row"><span>本案例关注的字段</span><code>FB03 / FC04 / FB00</code></div><div class="panel-rule"><span>检查点</span><strong>成功响应 + 两耳读回</strong></div></div>
+          <div class="layer-panel" id="layer-runtime" role="tabpanel" aria-labelledby="tab-runtime" tabindex="0" hidden><div class="panel-topline"><span>RUNTIME STATE</span><span class="panel-tag">CHECK THE CACHE</span></div><h3>设备正在使用新值吗？</h3><p>持久值与运行缓存可能不同。案例中的 DeviceInfo 总开关会阻断整组上报；指定缓存只有满足固件、加载和稳定性检查后才能同步。</p><div class="data-row"><span>关键区别</span><code>已保存 ≠ 已生效</code></div><div class="panel-rule"><span>检查点</span><strong>缓存状态 + 数据上报</strong></div></div>
+          <div class="layer-panel" id="layer-interface" role="tabpanel" aria-labelledby="tab-interface" tabindex="0" hidden><div class="panel-topline"><span>HOST RECOGNITION</span><span class="panel-tag">VERIFY IN USE</span></div><h3>手机真的显示正确了吗？</h3><p>回到手机验证最初的症状。参数正确但图片空白时，本案例通过重新配对恢复显示；控制项还需要验证硬件实际行为。</p><div class="data-row"><span>最后一步</span><code>看界面，也测功能</code></div><div class="panel-rule"><span>检查点</span><strong>手机观察 + 真实效果</strong></div></div>
+          <p class="layer-footnote">点击上方层级查看检查重点；示例不连接或操作你的设备。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="toolkit" class="toolkit shell" aria-labelledby="toolkit-heading">
+      <div class="section-heading"><div><div class="eyebrow">02 / THE TOOLKIT</div><h2 id="toolkit-heading">小工具，<span>完整的核对流程。</span></h2></div><p>源码可审阅，支持本机编译。<br>从离线自检开始，再决定是否连接设备。</p></div>
+      <div class="toolkit-layout">
+        <div class="download-card"><div class="download-card-top"><span class="tool-symbol" aria-hidden="true">{ }</span><span class="release-label">RELEASE / v0.1.0</span></div><h3>Mac 命令行工具</h3><p>包含完整 Swift / Python 源码、构建脚本与中文教程。没有捆绑厂家固件或设备备份。</p><div class="compatibility"><span>Apple Silicon</span><span>macOS 26.0+</span></div><a class="button button-primary" href="https://github.com/JacksonsY/ab1571am-earbud-tools/releases/download/v0.1.0/earbud-interop-tools-v0.1.0-macos-arm64.zip">下载 v0.1.0 <span class="file-size">132 KB</span></a><div class="download-links"><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/releases/tag/v0.1.0">发布说明</a><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/releases/download/v0.1.0/earbud-interop-tools-v0.1.0-macos-arm64.zip.sha256">SHA-256 校验</a></div><p class="download-note">未作 Developer ID 公证。也可审阅源码后在本机编译，无需关闭系统安全保护。</p></div>
+        <div class="terminal" data-tabs>
+          <div class="terminal-bar"><span class="terminal-name"><span aria-hidden="true">▰</span> TERMINAL / OFFLINE CHECK</span><span>zsh</span></div>
+          <div class="code-tabs" role="tablist" aria-label="选择工具使用方式"><button id="tab-binary" role="tab" aria-selected="true" aria-controls="code-binary" data-panel="code-binary">使用下载包</button><button id="tab-source" role="tab" aria-selected="false" aria-controls="code-source" tabindex="-1" data-panel="code-source">从源码构建</button></div>
+          <div id="code-binary" role="tabpanel" aria-labelledby="tab-binary"><div class="code-caption"><span>在解压后的目录中执行</span><button class="copy-button" data-copy="command-binary">复制命令</button></div><pre><code id="command-binary">./bin/inspect-earbud --help
+bash scripts/check.sh</code></pre><div class="terminal-output"><span>离线自检通过时</span><p>Self-test passed.<br>No Bluetooth connection attempted.</p></div></div>
+          <div id="code-source" role="tabpanel" aria-labelledby="tab-source" hidden><div class="code-caption"><span>在克隆后的仓库目录中执行</span><button class="copy-button" data-copy="command-source">复制命令</button></div><pre><code id="command-source">bash scripts/build-macos.sh
+bash scripts/check.sh</code></pre><div class="terminal-output"><span>构建环境</span><p>macOS + Xcode Command Line Tools<br>Python 3 用于辅助脚本自检</p></div></div>
+          <div class="terminal-footer"><span id="copy-status" role="status" aria-live="polite">这些命令只做本地构建或离线检查。</span><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/tree/main/tools">浏览源码</a></div>
+        </div>
+      </div>
+      <div class="tool-features"><div><span class="feature-index">[ 01 ]</span><h3>固件范围校验</h3><p>写入前核对平台、SDK 与构建时间。遇到不匹配的版本就停止。</p></div><div><span class="feature-index">[ 02 ]</span><h3>双耳分别读回</h3><p>保留修改前记录，区分转发确认与实际结果，核对两耳状态。</p></div><div><span class="feature-index">[ 03 ]</span><h3>私人数据留在本地</h3><p>工具不上传运行备份。日志与设备标识仍需自行保密，不要提交到仓库。</p></div></div>
+    </section>
+
+    <section id="guide" class="reading-room shell" aria-labelledby="guide-heading">
+      <div class="reading-intro"><div class="eyebrow">03 / READING ROOM</div><h2 id="guide-heading">先读懂，<br><span>再动手。</span></h2><p>不需要从命令开始。<br>选一个与你当前问题最接近的入口。</p><div class="reading-note"><span>RESEARCH NOTE</span><p>保留不知道的部分，<br>和记录成功一样重要。</p></div></div>
+      <div class="reading-list">
+        <a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/TUTORIAL.md"><span class="reading-index">01</span><div><span class="reading-category">START HERE</span><h3>通用排查教程</h3><p>把连接、弹窗、图片和功能问题分开，建立可验证的流程。</p></div><span class="reading-action">阅读</span></a>
+        <a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/CASE_STUDY.md"><span class="reading-index">02</span><div><span class="reading-category">THE CASE STUDY</span><h3>这次修复，证据是什么？</h3><p>一副设备上的观察、固件解释、结果和未解决事项。</p></div><span class="reading-action">阅读</span></a>
+        <a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/TOOLS.md"><span class="reading-index">03</span><div><span class="reading-category">HANDS ON</span><h3>工具使用与受限操作</h3><p>编译、自检、双耳查询、写前记录，以及遇到异常时如何停止。</p></div><span class="reading-action">阅读</span></a>
+        <a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/SOURCES.md"><span class="reading-index">04</span><div><span class="reading-category">TRACE THE SOURCES</span><h3>协议笔记与原始资料</h3><p>从 RACE、DeviceInfo 研究，回到厂商行为说明与证据来源。</p></div><span class="reading-action">阅读</span></a>
+      </div>
+    </section>
+
+    <section class="boundaries shell" aria-labelledby="boundaries-heading">
+      <div class="boundary-heading"><div class="eyebrow">04 / KNOW THE BOUNDARIES</div><h2 id="boundaries-heading">适用范围，同样重要。</h2></div>
+      <div class="faq-list">
+        <details><summary>任何 AB1571AM 耳机都可以使用吗？<span class="plus" aria-hidden="true"></span></summary><div><p>不能这样推断。当前实机证据来自一副设备与一个固件版本；相同芯片也可能使用不同配置和充电盒控制器。受限写入匹配的案例固件为：</p><dl class="firmware-profile"><div><dt>平台</dt><dd>ab157x_evk</dd></div><div><dt>SDK</dt><dd>IoT_SDK_for_BT_Audio_V3.10.0.c43sp_YFY_1</dd></div><div><dt>构建</dt><dd>2026/09/14 15:40:24 GMT +08:00</dd></div></dl><p>字符串匹配也不是完整固件真实性认证。遇到未知值或不匹配的版本，应停止操作。</p></div></details>
+        <details><summary>显示了原生菜单，就意味着功能都能用吗？<span class="plus" aria-hidden="true"></span></summary><div><p>菜单、图片和设备名称属于界面表现，不能证明官方认证，也不能证明对应硬件和协议功能完整。真实心率、精确查找等高级功能尚未在本案例逐项验证；型号和序列号修复恢复的是设备已有信息的上报。</p></div></details>
+        <details><summary>充电盒声音开关为什么还是灰色？<span class="plus" aria-hidden="true"></span></summary><div><p>本案例中伴侣 App 可以控制充电盒声音，但 iOS 开关仍灰。连接状态同步和控制协议适配都需要进一步区分，目前没有已验证的系统开关修复方案。Flycc 来源与版本记录见<a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/SOFTWARE.md">配套软件说明</a>。</p></div></details>
+        <details><summary>使用和分享时，需要注意什么？<span class="plus" aria-hidden="true"></span></summary><div><p>仅操作本人合法持有或明确获授权的设备。不要公开序列号、蓝牙标识、密钥、原始日志和固件备份，也不要将界面表现用于冒充官方认证或误导销售。研究、自用和免责声明不等于自动免责；仓库尚未指定额外的开源或内容复用许可证。请先阅读<a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/PUBLICATION_AND_LEGAL.md">隐私与法律说明</a>。</p></div></details>
+      </div>
+    </section>
+
+    <section class="closing shell"><div><span class="eyebrow">KEEP THE EVIDENCE. SHARE THE METHOD.</span><h2>让每一步，都有据可查。</h2></div><a class="button button-outline" href="https://github.com/JacksonsY/ab1571am-earbud-tools">在 GitHub 查看项目</a></section>
+  </main>
+  <footer class="site-footer shell"><div><a class="footer-brand" href="#">AB1571AM <span>EARBUD TOOLS</span></a><p>独立互操作性研究。与 Apple、Airoha 或产品厂商无隶属或认证关系。</p></div><div class="footer-right"><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/PUBLICATION_AND_LEGAL.md">隐私与法律说明</a><span>FIELD NOTES · 2026.10</span></div></footer>
+</body>
+</html>

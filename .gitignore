@@ -11,6 +11,10 @@
 !/docs/SOURCES.md
 !/docs/TOOLS.md
 !/docs/SOFTWARE.md
+!/docs/index.html
+!/docs/site.css
+!/docs/site.js
+!/docs/.nojekyll
 !/tools/
 /tools/*
 !/tools/inspect-earbud.swift

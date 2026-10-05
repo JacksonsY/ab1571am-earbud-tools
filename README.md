@@ -2,6 +2,8 @@
 
 AB1571AM 耳机互操作性研究与 macOS 工具：弹窗、设备信息和双耳配置排查。
 
+**[访问项目网站](https://jacksonsy.github.io/ab1571am-earbud-tools/)** · 研究概览、交互式状态说明、工具下载与入门文档。
+
 本仓库提供可迁移的研究方法，并记录一副 AB1571AM 耳机上的验证案例。**研究方法可以复用，具体参数不能视为所有同芯片设备的通用设置。** 本项目与 Apple、Airoha 或耳机及伴侣应用厂商无隶属、合作或认证关系。
 
 > Bluetooth earbud interoperability research with macOS tools and source code. Configuration writes are restricted to one reviewed firmware profile; this is not a universal unlock or authenticity-verification tool.
@@ -48,3 +50,7 @@ bash scripts/check.sh
 研究对象应当是本人合法持有或明确获授权的设备。不得用本资料冒充官方认证、伪造序列号、申请不实保修、隐瞒产品来源进行销售，或访问他人的设备与账户。自用、研究目的和免责声明都不能自动免除法律责任；详细边界见[法律说明](docs/PUBLICATION_AND_LEGAL.md)。
 
 维护日期：2026-10-05。提交补充材料时只提供脱敏的固件版本、步骤和结果，不要在 Issue 或 PR 中上传完整设备转储。
+
+## 网站维护
+
+GitHub Pages 从 `main` 分支的 `docs/` 发布静态站点，`.nojekyll` 禁用 Jekyll 处理。页面使用原生 HTML、CSS、JavaScript，不依赖外部字体或统计脚本。编辑 `docs/index.html`、`docs/site.css`、`docs/site.js` 后推送即可部署；本地预览可运行 `python3 -m http.server 8765 --directory docs`。更新工具发布版本时，也应核对页面中的版本、系统要求和下载链接。
