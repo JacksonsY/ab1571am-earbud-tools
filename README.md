@@ -60,6 +60,8 @@ bash scripts/check.sh
 
 ## 网站维护
 
-这个分支 `pages-research-notes` 专门维护研究型 GitHub Pages。页面从该分支的 `docs/` 发布，`.nojekyll` 禁用 Jekyll 处理；本次页面更新不合并到 `main`。
+仓库统一使用 `main` 分支。网站代码放在 `web/`，`docs/` 保留研究与工具文档，`prompts/` 保存编程 agent 提示词。
 
-页面使用原生 HTML、CSS、JavaScript，不依赖外部字体或统计脚本。编辑 `docs/index.html`、`docs/site.css`、`docs/site.js` 后，显式推送 `pages-research-notes` 分支即可部署；本地预览可运行 `python3 -m http.server 8765 --directory docs`。新增研究结论时应同时核对证据级别、适用范围和来源链接。
+GitHub Pages 通过 `.github/workflows/pages.yml` 部署，只上传 `main` 中的 `web/`。修改网站文件后推送到 `main` 会自动发布，也可以手动运行该工作流。本地预览使用 `python3 -m http.server 8765 --directory web`。
+
+页面使用原生 HTML、CSS、JavaScript，不依赖外部字体或统计脚本。新增研究结论时应同时核对证据级别、适用范围和来源链接；私人日志与设备备份继续放在被忽略的 `work/`，不要放进 `web/`。
