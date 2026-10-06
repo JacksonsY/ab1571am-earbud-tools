@@ -3,138 +3,271 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f5ef">
-  <meta name="description" content="AB1571AM 耳机互操作性研究与 macOS 工具。理解弹窗、双耳配置和设备信息上报，用可核对的步骤排查问题。">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="AB1571AM 耳机互操作性排查记录：从 RACE 报文、配置条件和双耳转发，分析弹窗、图片与设备信息上报的因果关系。">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="AB1571AM Earbud Tools · 看懂连接背后">
-  <meta property="og:description" content="一份有边界的研究，一套可核对的工具。面向 AB1571AM 耳机的 macOS 工具与互操作性记录。">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="AB1571AM 耳机互操作性排查记录">
+  <meta property="og:description" content="一份以证据为中心的技术长文：问题如何拆分、假设如何验证，以及哪些结论仍然未知。">
   <meta property="og:url" content="https://jacksonsy.github.io/ab1571am-earbud-tools/">
   <link rel="canonical" href="https://jacksonsy.github.io/ab1571am-earbud-tools/">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231c3e32'/%3E%3Cpath d='M15 43 28 18h8l13 25M21 33h22M27 43h10' fill='none' stroke='%23d1f27e' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="site.css">
-  <script src="site.js" defer></script>
-  <title>AB1571AM Earbud Tools · 看懂连接背后</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%232c55d4'/%3E%3Cpath d='M23 17H15v30h8m18-30h8v30h-8M28 38l4-14 4 14m-7-5h6' fill='none' stroke='white' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="site.css?v=research-notes-1">
+  <script src="site.js?v=research-notes-1" defer></script>
+  <title>AB1571AM · 耳机互操作性排查记录</title>
 </head>
 <body>
-  <a class="skip-link" href="#main">跳到主要内容</a>
-  <header class="site-header">
-    <div class="shell header-inner">
-      <a class="brand" href="#" aria-label="AB1571AM Earbud Tools 首页"><span class="brand-mark" aria-hidden="true">a<span>/</span></span><span><strong>AB1571AM</strong><small>EARBUD TOOLS</small></span></a>
-      <button class="menu-toggle" aria-controls="site-nav" aria-expanded="false" aria-label="展开导航"><span></span><span></span></button>
-      <nav id="site-nav" aria-label="主导航">
-        <a href="#findings">研究记录</a><a href="#toolkit">工具下载</a><a href="#guide">开始使用</a>
-        <a class="nav-repo" href="https://github.com/JacksonsY/ab1571am-earbud-tools">GitHub</a>
+<a class="skip-link" href="#article">跳到正文</a>
+<header class="masthead">
+  <div class="page-shell masthead-inner">
+    <a class="wordmark" href="#abstract"><span class="mark" aria-hidden="true">[a]</span><span>AB1571AM<span class="wordmark-note"> / RESEARCH NOTES</span></span></a>
+    <a class="repository-link" href="https://github.com/JacksonsY/ab1571am-earbud-tools/tree/pages-research-notes">研究分支</a>
+  </div>
+  <div class="reading-progress" aria-hidden="true"><span id="reading-progress"></span></div>
+</header>
+
+<div class="page-shell document-layout">
+  <aside class="sidebar" aria-label="文章目录">
+    <div class="sidebar-inner">
+      <div class="sidebar-heading">目录 <span>CONTENTS</span></div>
+      <nav class="toc" aria-label="桌面文章目录">
+        <a href="#abstract" aria-current="location"><span>00</span>摘要与研究范围</a>
+        <a href="#method"><span>01</span>问题与证据方法</a>
+        <a href="#transport"><span>02</span>连接与报文解析</a>
+        <a href="#popup"><span>03</span>旧口令为何失效</a>
+        <a href="#peer"><span>04</span>双耳链路的验证</a>
+        <a href="#artwork"><span>05</span>图片与主机缓存</a>
+        <a href="#device-info"><span>06</span>设备信息与运行缓存</a>
+        <a href="#case-sound"><span>07</span>尚未解决的声音开关</a>
+        <a href="#conclusions"><span>08</span>验证结论与局限</a>
+        <a href="#references"><span>09</span>资料与进一步研究</a>
       </nav>
+      <div class="sidebar-note"><span>CASE STUDY 01</span><p>单一设备对<br>单一固件构建<br>2026 年 10 月</p></div>
+      <a class="sidebar-source" href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/CASE_STUDY.md">查看原始案例摘要</a>
     </div>
-  </header>
+  </aside>
 
-  <main id="main">
-    <section class="hero shell" aria-labelledby="hero-heading">
-      <div class="hero-copy">
-        <div class="eyebrow"><span class="short-rule"></span>INDEPENDENT RESEARCH · 001</div>
-        <h1 id="hero-heading">看见弹窗，<br><span>也看懂背后。</span></h1>
-        <p class="hero-description">面向 AB1571AM 耳机的 macOS 工具与互操作性研究。把配对、双耳配置和系统显示，拆成有证据、可核对的步骤。</p>
-        <div class="hero-actions"><a class="button button-primary" href="https://github.com/JacksonsY/ab1571am-earbud-tools/releases/latest">获取 macOS 工具</a><a class="text-link" href="#findings">阅读研究记录</a></div>
-        <div class="hero-meta"><span>v0.1.0</span><span>Apple Silicon</span><span>macOS 26+</span></div>
-        <p class="scope-note">一副设备 · 一个固件版本 · 明确的适用边界</p>
-      </div>
+  <main id="article" class="paper">
+    <details class="mobile-contents">
+      <summary>文章目录 <span>10 个章节</span></summary>
+      <nav class="toc" aria-label="手机文章目录">
+        <a href="#abstract"><span>00</span>摘要与研究范围</a><a href="#method"><span>01</span>问题与证据方法</a>
+        <a href="#transport"><span>02</span>连接与报文解析</a><a href="#popup"><span>03</span>旧口令为何失效</a>
+        <a href="#peer"><span>04</span>双耳链路的验证</a><a href="#artwork"><span>05</span>图片与主机缓存</a>
+        <a href="#device-info"><span>06</span>设备信息与运行缓存</a><a href="#case-sound"><span>07</span>尚未解决的声音开关</a>
+        <a href="#conclusions"><span>08</span>验证结论与局限</a><a href="#references"><span>09</span>资料与进一步研究</a>
+      </nav>
+    </details>
 
-      <div class="field-diagram">
-        <div class="diagram-heading"><span>THE CONNECTION, DECODED</span><span class="index-label">FIG. 01</span></div>
-        <svg class="protocol-map" viewBox="0 0 560 450" role="img" aria-labelledby="map-title map-desc">
-          <title id="map-title">双耳、配置与系统界面的关系示意图</title>
-          <desc id="map-desc">当前连接耳和另一耳分别核对配置，通过固件运行状态影响主机识别。连线为研究示意，不表示正在连接设备。</desc>
-          <defs><pattern id="map-grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#c6cfbf"/></pattern></defs>
-          <rect width="560" height="450" fill="url(#map-grid)"/>
-          <g fill="none" stroke="#62876d" stroke-width="1.5"><path d="M145 118V157Q145 177 165 177H230V202"/><path d="M415 118V157Q415 177 395 177H330V202"/><path d="M280 302V356"/><path d="M145 89H83V386H185" stroke-dasharray="4 7" opacity=".5"/></g>
-          <g fill="#f5f5ef" stroke="#315d48" stroke-width="1.5"><rect x="65" y="46" width="160" height="72" rx="8"/><rect x="335" y="46" width="160" height="72" rx="8"/></g>
-          <g class="map-label"><text x="85" y="71">LOCAL</text><text x="355" y="71">AWS PEER</text></g>
-          <g class="map-title"><text x="85" y="99">当前连接耳</text><text x="355" y="99">另一耳</text></g>
-          <g fill="#315d48"><circle cx="204" cy="68" r="3"/><circle cx="474" cy="68" r="3"/></g>
-          <rect x="178" y="194" width="204" height="116" rx="12" fill="#1c3e32"/>
-          <g stroke="#315d48" stroke-width="3"><path d="M196 181v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13M196 310v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13m20-13v13M165 212h13m-13 20h13m-13 20h13m-13 20h13m-13 20h13M382 212h13m-13 20h13m-13 20h13m-13 20h13m-13 20h13"/></g>
-          <text x="200" y="221" class="map-chip-small">CONFIG</text><text x="200" y="261" class="map-chip-title">AB1571AM</text><text x="200" y="287" class="map-chip-small">READ BACK</text>
-          <g class="map-side-note"><text x="415" y="238">配置值</text><text x="415" y="260">≠</text><text x="415" y="281">最终表现</text></g>
-          <circle cx="280" cy="346" r="4" fill="#315d48"/>
-          <rect x="185" y="363" width="190" height="55" rx="7" fill="#f5f5ef" stroke="#315d48" stroke-width="1.5"/>
-          <text x="280" y="397" text-anchor="middle" class="map-title">系统界面</text>
-          <text x="42" y="296" transform="rotate(-90 42 296)" class="map-label">VERIFY BOTH</text>
-          <g stroke="#91a68c" stroke-width="1"><path d="M21 21h12m-6-6v12M527 429h12m-6-6v12"/></g>
-        </svg>
-        <div class="diagram-foot"><span>双耳角色可变，结果分别核对。</span><span>研究示意 / 非实时连接</span></div>
-        <span class="diagram-stamp" aria-hidden="true">FIELD<br>NOTES</span>
-      </div>
-    </section>
+    <article>
+      <header id="abstract" class="article-header">
+        <p class="article-category">BLUETOOTH INTEROPERABILITY / CASE STUDY</p>
+        <h1>AB1571AM 耳机<br>互操作性排查记录</h1>
+        <p class="article-deck">从弹窗、图片到设备信息上报：沿着报文、配置条件与运行状态，追踪一次兼容性问题的完整分析过程。</p>
+        <div class="article-meta"><span>研究日期：2026-10-05</span><span>范围：一副设备 / 一个构建</span><span>验证环境：macOS + iOS 27.0.1</span></div>
+        <div class="abstract">
+          <h2>摘要</h2>
+          <p>这次排查面对的并不是一个单独的“弹窗开关”：最初是弹窗不出现，随后是系统设置页图片空白，最后是型号和序列号显示为 Unknown。它们发生在不同环节，需要用不同证据解释。</p>
+          <p>本案例通过 BLE/RACE 定向查询、固件静态分析、双耳配置核对和手机端观察，恢复了弹窗、图片及设备原有信息的上报。充电盒声音在伴侣 App 中可控，但 iOS 开关仍灰，原因尚未确定。</p>
+          <p class="abstract-scope">本文解释原理与分析方法。文中的参数关系仅对应下列固件，不能当作其他设备的通用写入清单；界面恢复也不代表获得官方认证或具备全部原装功能。</p>
+        </div>
+        <div class="table-wrap profile-wrap">
+          <table class="profile-table"><caption>表 1 · 本次研究的非个人固件信息</caption><tbody>
+            <tr><th scope="row">编译目标</th><td><code>ab157x_evk</code></td></tr>
+            <tr><th scope="row">SDK</th><td><code>IoT_SDK_for_BT_Audio_V3.10.0.c43sp_YFY_1</code></td></tr>
+            <tr><th scope="row">构建时间</th><td><code>2026/09/14 15:40:24 GMT +08:00</code></td></tr>
+          </tbody></table>
+        </div>
+      </header>
 
-    <section id="findings" class="findings shell" aria-labelledby="findings-heading">
-      <div class="section-kicker"><span id="findings-heading">案例进展</span><span>OBSERVED, NOT ASSUMED</span></div>
-      <div class="finding-grid">
-        <article><span class="finding-number">01</span><h2>近距离弹窗</h2><p><span class="status-symbol" aria-hidden="true">✓</span> 用户实测恢复</p></article>
-        <article><span class="finding-number">02</span><h2>图片与电量</h2><p><span class="status-symbol" aria-hidden="true">✓</span> 重新配对后恢复</p></article>
-        <article><span class="finding-number">03</span><h2>设备信息</h2><p><span class="status-symbol" aria-hidden="true">✓</span> 原有型号与序列号恢复上报</p></article>
-        <article class="finding-open"><span class="finding-number">04</span><h2>充电盒声音</h2><p><span class="status-symbol" aria-hidden="true">◌</span> 系统开关仍待解决</p></article>
-      </div>
-      <p class="finding-caption">以上结果来自一副设备、一个构建版本。入口可见，不代表对应的高级功能已经实现或验证。</p>
-    </section>
-
-    <section class="layers-section" aria-labelledby="layers-heading">
-      <div class="shell layers-layout" id="layers" data-tabs data-selected="layer-config">
-        <div class="layers-intro"><div class="eyebrow">01 / UNDERSTAND THE SYSTEM</div><h2 id="layers-heading">三个层面，<br><span>一条证据链。</span></h2><p>写入成功只是开始。设备保存的值、运行中的状态和手机显示的结果，需要分别验证。</p><a class="light-link" href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/PROTOCOL.md">查看完整协议笔记</a></div>
-        <div class="layer-workspace">
-          <div class="layer-tabs" role="tablist" aria-label="探索三个状态层面">
-            <button id="tab-config" role="tab" aria-selected="true" aria-controls="layer-config" data-panel="layer-config"><span>01</span>持久配置</button>
-            <button id="tab-runtime" role="tab" aria-selected="false" aria-controls="layer-runtime" tabindex="-1" data-panel="layer-runtime"><span>02</span>运行状态</button>
-            <button id="tab-interface" role="tab" aria-selected="false" aria-controls="layer-interface" tabindex="-1" data-panel="layer-interface"><span>03</span>系统界面</button>
+      <section id="method">
+        <div class="section-label">01 / INVESTIGATION METHOD</div>
+        <h2>先把“没有正常显示”拆成不同问题</h2>
+        <p>同一张设置页面会混合呈现多个来源的数据。设备可能已经保存了正确参数，却仍在使用旧的运行缓存；也可能已经正确上报，但手机保留着先前的识别状态。看到最终页面异常，不能直接推断是哪一个参数有问题。</p>
+        <p>这里把固件的非易失配置存储称作 NVDM，把运行时供代码直接读取的副本称作缓存。NVKEY 是配置项的编号；知道编号之后，仍要确定它的值域、读取方式和使用条件。</p>
+        <figure class="figure">
+          <div class="state-chain" aria-label="持久配置、运行状态、对外上报、主机界面四层关系">
+            <div><span>1</span><strong>持久配置</strong><small>NVDM 中保存的值</small></div>
+            <div><span>2</span><strong>运行状态</strong><small>缓存、条件与角色</small></div>
+            <div><span>3</span><strong>对外上报</strong><small>广播、服务与信息包</small></div>
+            <div><span>4</span><strong>主机界面</strong><small>识别、配对与显示</small></div>
           </div>
-          <div class="layer-panel" id="layer-config" role="tabpanel" aria-labelledby="tab-config" tabindex="0"><div class="panel-topline"><span>NON-VOLATILE CONFIGURATION</span><span class="panel-tag">READ FIRST</span></div><h3>参数已经保存了吗？</h3><p>先核对固件，再读取两耳原值。只在已研究的范围内修改，每次实际写入都保留原值记录并重新读回。</p><div class="data-row"><span>本案例关注的字段</span><code>FB03 / FC04 / FB00</code></div><div class="panel-rule"><span>检查点</span><strong>成功响应 + 两耳读回</strong></div></div>
-          <div class="layer-panel" id="layer-runtime" role="tabpanel" aria-labelledby="tab-runtime" tabindex="0" hidden><div class="panel-topline"><span>RUNTIME STATE</span><span class="panel-tag">CHECK THE CACHE</span></div><h3>设备正在使用新值吗？</h3><p>持久值与运行缓存可能不同。案例中的 DeviceInfo 总开关会阻断整组上报；指定缓存只有满足固件、加载和稳定性检查后才能同步。</p><div class="data-row"><span>关键区别</span><code>已保存 ≠ 已生效</code></div><div class="panel-rule"><span>检查点</span><strong>缓存状态 + 数据上报</strong></div></div>
-          <div class="layer-panel" id="layer-interface" role="tabpanel" aria-labelledby="tab-interface" tabindex="0" hidden><div class="panel-topline"><span>HOST RECOGNITION</span><span class="panel-tag">VERIFY IN USE</span></div><h3>手机真的显示正确了吗？</h3><p>回到手机验证最初的症状。参数正确但图片空白时，本案例通过重新配对恢复显示；控制项还需要验证硬件实际行为。</p><div class="data-row"><span>最后一步</span><code>看界面，也测功能</code></div><div class="panel-rule"><span>检查点</span><strong>手机观察 + 真实效果</strong></div></div>
-          <p class="layer-footnote">点击上方层级查看检查重点；示例不连接或操作你的设备。</p>
+          <figcaption>图 1 · 排查时沿链路逐层取证。真实硬件功能还需要独立验证，不能只检查最右侧的页面。</figcaption>
+        </figure>
+        <h3>建立两种验证闭环</h3>
+        <p><strong>协议闭环</strong>回答“命令是否按预期执行”：识别固件、读取原值、记录变更、检查对应响应、再次读回。<strong>用户端闭环</strong>回答“最初的问题是否消失”：回到手机检查弹窗、图片和设备信息，并在涉及控制时测试硬件行为。</p>
+        <p>两种闭环缺一不可。蓝牙连接成功，只能证明链路建立；收到转发确认，只能证明某层接收了请求；参数读回正确，也不能代替手机端验证。</p>
+        <div class="evidence-key" aria-label="本文的证据分类">
+          <div><span class="evidence-label observed">实机观察</span><p>直接响应、读回值或设备所有者实际确认的结果。</p></div>
+          <div><span class="evidence-label analyzed">固件解释</span><p>在指定构建的代码路径中找到的条件与调用关系。</p></div>
+          <div><span class="evidence-label inferred">推测 / 未知</span><p>与现象一致，但尚不足以确定根因或证明能力的部分。</p></div>
         </div>
-      </div>
-    </section>
+        <p>原始固件、配置区备份、设备标识和截图保留在本地。公开材料提供脱敏结论与配套代码，因此读者无法仅凭本页面完整重放全部实机证据。</p>
+      </section>
 
-    <section id="toolkit" class="toolkit shell" aria-labelledby="toolkit-heading">
-      <div class="section-heading"><div><div class="eyebrow">02 / THE TOOLKIT</div><h2 id="toolkit-heading">小工具，<span>完整的核对流程。</span></h2></div><p>源码可审阅，支持本机编译。<br>从离线自检开始，再决定是否连接设备。</p></div>
-      <div class="toolkit-layout">
-        <div class="download-card"><div class="download-card-top"><span class="tool-symbol" aria-hidden="true">{ }</span><span class="release-label">RELEASE / v0.1.0</span></div><h3>Mac 命令行工具</h3><p>包含完整 Swift / Python 源码、构建脚本与中文教程。没有捆绑厂家固件或设备备份。</p><div class="compatibility"><span>Apple Silicon</span><span>macOS 26.0+</span></div><a class="button button-primary" href="https://github.com/JacksonsY/ab1571am-earbud-tools/releases/download/v0.1.0/earbud-interop-tools-v0.1.0-macos-arm64.zip">下载 v0.1.0 <span class="file-size">132 KB</span></a><div class="download-links"><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/releases/tag/v0.1.0">发布说明</a><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/releases/download/v0.1.0/earbud-interop-tools-v0.1.0-macos-arm64.zip.sha256">SHA-256 校验</a></div><p class="download-note">未作 Developer ID 公证。也可审阅源码后在本机编译，无需关闭系统安全保护。</p></div>
-        <div class="terminal" data-tabs>
-          <div class="terminal-bar"><span class="terminal-name"><span aria-hidden="true">▰</span> TERMINAL / OFFLINE CHECK</span><span>zsh</span></div>
-          <div class="code-tabs" role="tablist" aria-label="选择工具使用方式"><button id="tab-binary" role="tab" aria-selected="true" aria-controls="code-binary" data-panel="code-binary">使用下载包</button><button id="tab-source" role="tab" aria-selected="false" aria-controls="code-source" tabindex="-1" data-panel="code-source">从源码构建</button></div>
-          <div id="code-binary" role="tabpanel" aria-labelledby="tab-binary"><div class="code-caption"><span>在解压后的目录中执行</span><button class="copy-button" data-copy="command-binary">复制命令</button></div><pre><code id="command-binary">./bin/inspect-earbud --help
-bash scripts/check.sh</code></pre><div class="terminal-output"><span>离线自检通过时</span><p>Self-test passed.<br>No Bluetooth connection attempted.</p></div></div>
-          <div id="code-source" role="tabpanel" aria-labelledby="tab-source" hidden><div class="code-caption"><span>在克隆后的仓库目录中执行</span><button class="copy-button" data-copy="command-source">复制命令</button></div><pre><code id="command-source">bash scripts/build-macos.sh
-bash scripts/check.sh</code></pre><div class="terminal-output"><span>构建环境</span><p>macOS + Xcode Command Line Tools<br>Python 3 用于辅助脚本自检</p></div></div>
-          <div class="terminal-footer"><span id="copy-status" role="status" aria-live="polite">这些命令只做本地构建或离线检查。</span><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/tree/main/tools">浏览源码</a></div>
+      <section id="transport">
+        <div class="section-label">02 / TRANSPORT & FRAMING</div>
+        <h2>找到能通信的路径，再确认每个字节的含义</h2>
+        <h3>为什么 Mac 可以直接完成查询</h3>
+        <p>本样本同时暴露了经典蓝牙服务和 BLE 服务。经典蓝牙侧能发现 <code>Airoha_APP</code> 及 RFCOMM 端点，但实际打开通道返回错误；BLE 侧则成功发现 RACE 的写入与通知特征，并返回 SDK 和构建信息。</p>
+        <p>BLE 提供传输通道，RACE 规定本次维护通道中的命令格式。Mac 通过它查询和调整耳机内部状态；随后影响手机界面的，是耳机自己的广播、信息上报和手机识别流程。RACE 查询本身不是手机弹窗的绘制命令。</p>
+        <div class="callout observed"><strong>实机观察</strong><p>最终查询与受限修改通过 Mac 的 CoreBluetooth 完成，没有依赖安卓 USB 调试。这个结果说明本样本的 BLE 路径可用，不说明所有 Airoha 固件都开放相同接口。</p></div>
+        <p>“服务被广播出来”和“通道实际可用”是两件事。发现阶段应定向匹配明确授权的设备，然后用响应确认链路，不能把附近任意同名设备当作目标。</p>
+        <h3>以 SDK 查询为例理解 RACE 帧</h3>
+        <p>下面是本案例使用过的无参数 SDK 查询。它只用来说明已核对的报文格式，不是所有设备通用的探测命令。</p>
+        <figure class="figure">
+          <ol class="packet-bytes" aria-label="六字节 SDK 查询示例">
+            <li><code>05</code><span>帧头</span><small>偏移 0</small></li><li><code>5A</code><span>请求类型</span><small>偏移 1</small></li>
+            <li><code>02</code><span>长度低字节</span><small>偏移 2</small></li><li><code>00</code><span>长度高字节</span><small>偏移 3</small></li>
+            <li><code>01</code><span>命令低字节</span><small>偏移 4</small></li><li><code>03</code><span>命令高字节</span><small>偏移 5</small></li>
+          </ol>
+          <figcaption>图 2 · 长度和命令号使用小端顺序。<code>01 03</code> 表示命令 <code>0x0301</code>，长度 <code>2</code> 包含命令本身的两个字节。</figcaption>
+        </figure>
+        <p>接收器还必须处理 BLE 分片和一次通知中的多个完整帧。它要先按长度切出帧，再匹配响应类型与命令号，最后交给该命令自己的解析规则。</p>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="各命令响应布局对照">
+          <table><caption>表 2 · 不能把所有响应的第一个内容字节都当成状态码</caption><thead><tr><th>命令</th><th>本案例的关键布局</th><th>错误解释会导致什么</th></tr></thead><tbody>
+            <tr><td><code>0x0301</code><br>SDK 查询</td><td>响应中的 <code>0x29</code> 与后续 SDK 字符串长度相关。</td><td>若按“非零失败状态”处理，会把有效信息误判为错误。</td></tr>
+            <tr><td><code>0x0A00</code><br>读取 NVKEY</td><td>完整帧偏移 6–7 是数据长度，值从偏移 8 开始。</td><td>错位读取可能把长度当作值，进而制造错误的修改依据。</td></tr>
+            <tr><td><code>0x0A01</code><br>写入 NVKEY</td><td>本样本在完整帧偏移 6 返回状态；成功还需再次读取目标。</td><td>只看连接或通知出现，无法证明写入已成功。</td></tr>
+          </tbody></table>
         </div>
-      </div>
-      <div class="tool-features"><div><span class="feature-index">[ 01 ]</span><h3>固件范围校验</h3><p>写入前核对平台、SDK 与构建时间。遇到不匹配的版本就停止。</p></div><div><span class="feature-index">[ 02 ]</span><h3>双耳分别读回</h3><p>保留修改前记录，区分转发确认与实际结果，核对两耳状态。</p></div><div><span class="feature-index">[ 03 ]</span><h3>私人数据留在本地</h3><p>工具不上传运行备份。日志与设备标识仍需自行保密，不要提交到仓库。</p></div></div>
-    </section>
+        <p class="table-hint">表格较宽，窄屏可以左右滑动查看。</p>
+        <p>这种区别也是实现中保留独立解析函数的原因：<code>nvkeyValue</code>、<code>flashPage</code> 和 <code>unwrapPeer</code> 需要核对的响应格式与约束各不相同。用一个“跳过固定长度、剩下全当数据”的规则处理全部命令，会失去最重要的边界信息。<a class="reference" href="#ref-code">[1]</a><a class="reference" href="#ref-race">[2]</a></p>
+      </section>
 
-    <section id="guide" class="reading-room shell" aria-labelledby="guide-heading">
-      <div class="reading-intro"><div class="eyebrow">03 / READING ROOM</div><h2 id="guide-heading">先读懂，<br><span>再动手。</span></h2><p>不需要从命令开始。<br>选一个与你当前问题最接近的入口。</p><div class="reading-note"><span>RESEARCH NOTE</span><p>保留不知道的部分，<br>和记录成功一样重要。</p></div></div>
-      <div class="reading-list">
-        <a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/TUTORIAL.md"><span class="reading-index">01</span><div><span class="reading-category">START HERE</span><h3>通用排查教程</h3><p>把连接、弹窗、图片和功能问题分开，建立可验证的流程。</p></div><span class="reading-action">阅读</span></a>
-        <a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/CASE_STUDY.md"><span class="reading-index">02</span><div><span class="reading-category">THE CASE STUDY</span><h3>这次修复，证据是什么？</h3><p>一副设备上的观察、固件解释、结果和未解决事项。</p></div><span class="reading-action">阅读</span></a>
-        <a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/TOOLS.md"><span class="reading-index">03</span><div><span class="reading-category">HANDS ON</span><h3>工具使用与受限操作</h3><p>编译、自检、双耳查询、写前记录，以及遇到异常时如何停止。</p></div><span class="reading-action">阅读</span></a>
-        <a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/SOURCES.md"><span class="reading-index">04</span><div><span class="reading-category">TRACE THE SOURCES</span><h3>协议笔记与原始资料</h3><p>从 RACE、DeviceInfo 研究，回到厂商行为说明与证据来源。</p></div><span class="reading-action">阅读</span></a>
-        <a id="agent-prompts" href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/prompts/README.md"><span class="reading-index">05</span><div><span class="reading-category">CODING AGENTS</span><h3>把任务交给编程 Agent</h3><p>Claude Code、Codex 通用提示词：从只读诊断到新设备适配、验证与交接。</p></div><span class="reading-action">阅读</span></a>
-      </div>
-    </section>
+      <section id="popup">
+        <div class="section-label">03 / A SETTER–GETTER MISMATCH</div>
+        <h2>弹窗：为什么旧口令存在，却没有生效</h2>
+        <p>公开讨论容易把“发送某个口令”当作答案，但口令只是进入固件函数的一种入口。真正决定结果的是：它写入什么值，当前代码又如何读取和判断这个值。</p>
+        <h3>从字符串追到实际条件</h3>
+        <ol class="process-list"><li><strong>定位线索。</strong>从合法取得的固件中找到旧功能名或口令字符串；文字存在只是线索，尚不能证明对应路径可达。</li><li><strong>追踪调用。</strong>沿字符串引用找到命令处理与动作分派，再追到实际写入配置的函数。</li><li><strong>核对读取。</strong>反向寻找这些配置项的 getter 及其调用者，比较“写入什么”和“什么值会被识别为有效”。</li><li><strong>回到设备验证。</strong>先读取原值，在明确范围内变更，检查两耳读回，再观察手机是否出现预期弹窗。</li></ol>
+        <p>在本构建中仍能找到旧版弹窗口令对应的处理路径。继续追踪后发现，旧路径会把 <code>FC04</code> 写成 <code>01</code>，而当前 getter 识别的是 <code>7A</code>。这就形成了“旧写入约定”和“新读取判断”不一致的情况。</p>
+        <figure class="figure">
+          <div class="comparison-flow"><div><span>旧入口的写入结果</span><code>FC04 = 01</code><p>口令存在，不代表写入值仍符合当前条件。</p></div><div><span>当前 getter 的判定</span><code>FC04 == 7A</code><p>条件不满足时，后续的弹窗路径不会因口令本身而成立。</p></div></div>
+          <figcaption>图 3 · 验证 setter 与 getter 是否遵循同一个约定，比确认口令字符串是否存在更重要。</figcaption>
+        </figure>
+        <p>这个判断还与 <code>FB03</code> 的值共同作用。下面只保留本案例相关的逻辑，用伪代码表示；它不是可执行的补丁。</p>
+        <pre class="code-block" tabindex="0" role="region" aria-label="弹窗条件的简化伪代码"><code>if FC04 != 0x7A:
+    popup_condition = false
+else if FB03 == 0:
+    popup_condition = true
+else if FB03 == 1:
+    popup_condition = false
+else if FB03 == 2:
+    popup_condition = another_runtime_condition</code></pre>
+        <p><code>FB03 = 2</code> 还依赖其他运行条件，不能简单称为“开启”。本次也没有使用这个分支来实现修复。</p>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="弹窗参数前后对照">
+          <table><caption>表 3 · 单一构建中的实际变更</caption><thead><tr><th>字段</th><th>本样本原值</th><th>本样本验证后值</th><th>验证方式</th></tr></thead><tbody>
+            <tr><td><code>FB03</code></td><td><code>01</code></td><td><code>00</code></td><td>两耳分别确认响应并读回。</td></tr>
+            <tr><td><code>FC04</code></td><td><code>01</code></td><td><code>7A</code></td><td>两耳分别确认响应并读回。</td></tr>
+          </tbody></table>
+        </div>
+        <p class="table-hint">表格较宽，窄屏可以左右滑动查看。</p>
+        <div class="callout observed"><strong>结果与边界</strong><p>设备所有者随后确认弹窗出现。此结果支持上述条件与本样本问题相关；不能证明相同芯片的其他固件需要相同值，也不构成设备真实性或官方认证的证明。</p></div>
+      </section>
 
-    <section class="boundaries shell" aria-labelledby="boundaries-heading">
-      <div class="boundary-heading"><div class="eyebrow">04 / KNOW THE BOUNDARIES</div><h2 id="boundaries-heading">适用范围，同样重要。</h2></div>
-      <div class="faq-list">
-        <details><summary>任何 AB1571AM 耳机都可以使用吗？<span class="plus" aria-hidden="true"></span></summary><div><p>不能这样推断。当前实机证据来自一副设备与一个固件版本；相同芯片也可能使用不同配置和充电盒控制器。受限写入匹配的案例固件为：</p><dl class="firmware-profile"><div><dt>平台</dt><dd>ab157x_evk</dd></div><div><dt>SDK</dt><dd>IoT_SDK_for_BT_Audio_V3.10.0.c43sp_YFY_1</dd></div><div><dt>构建</dt><dd>2026/09/14 15:40:24 GMT +08:00</dd></div></dl><p>字符串匹配也不是完整固件真实性认证。遇到未知值或不匹配的版本，应停止操作。</p></div></details>
-        <details><summary>显示了原生菜单，就意味着功能都能用吗？<span class="plus" aria-hidden="true"></span></summary><div><p>菜单、图片和设备名称属于界面表现，不能证明官方认证，也不能证明对应硬件和协议功能完整。真实心率、精确查找等高级功能尚未在本案例逐项验证；型号和序列号修复恢复的是设备已有信息的上报。</p></div></details>
-        <details><summary>充电盒声音开关为什么还是灰色？<span class="plus" aria-hidden="true"></span></summary><div><p>本案例中伴侣 App 可以控制充电盒声音，但 iOS 开关仍灰。连接状态同步和控制协议适配都需要进一步区分，目前没有已验证的系统开关修复方案。Flycc 来源与版本记录见<a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/SOFTWARE.md">配套软件说明</a>。</p></div></details>
-        <details><summary>使用和分享时，需要注意什么？<span class="plus" aria-hidden="true"></span></summary><div><p>仅操作本人合法持有或明确获授权的设备。不要公开序列号、蓝牙标识、密钥、原始日志和固件备份，也不要将界面表现用于冒充官方认证或误导销售。研究、自用和免责声明不等于自动免责；仓库尚未指定额外的开源或内容复用许可证。请先阅读<a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/PUBLICATION_AND_LEGAL.md">隐私与法律说明</a>。</p></div></details>
-      </div>
-    </section>
+      <section id="peer">
+        <div class="section-label">04 / TWO EARBUDS, TWO RESULTS</div>
+        <h2>双耳：转发成功，不等于另一耳执行成功</h2>
+        <p>一副 TWS 耳机存在两个物理端点，但当前连接耳与另一耳的通信角色会变化。因此，重复查询当前连接角色，并不能独立证明两只耳机都完成了修改。</p>
+        <h3>先发现目标，再校验内层响应</h3>
+        <p>本案例先通过 <code>0x0D00</code> 发现可用转发目标，再通过 <code>0x0D01</code> 包装完整的内层 RACE 请求。目标来自设备当时的返回，不是根据旧 SDK 或另一副设备固定填写。</p>
+        <figure class="figure">
+          <div class="relay-envelope"><div class="envelope-label">外层：转发请求 / 转发结果</div><p>目标类型与 ID ＋ 一条完整的内层帧</p><div class="inner-envelope"><div class="envelope-label">内层：真正需要验证的设备命令</div><p>命令号匹配 → 响应布局有效 → 操作结果符合预期</p></div></div>
+          <figcaption>图 4 · 外层确认只描述转发层状态。对另一耳的成功判断，还需要内层响应以及之后的重新读取。</figcaption>
+        </figure>
+        <p>当前实现只把符合预期封装、目标和内层响应类型的帧交给后续处理，避免将外层确认误当成写入成功。<a class="reference" href="#ref-code">[1]</a></p>
+        <h3>一次不可达，暴露出角色与链路问题</h3>
+        <p>排查过程中，另一耳曾无法通过目标发现取得。之后链路恢复，连接角色也发生变化，才完成相应的核对。即使两耳都戴着，也不能假定内部转发链路已经满足条件。</p>
+        <p>旧 SDK 中出现过的备用目标并不被本构建支持。正确的下一步是记录当时状态、恢复可验证的链路，再继续读取；随意填写备用目标只会绕过证据，而不会补上证据。</p>
+        <div class="callout analyzed"><strong>为什么要记录部分完成状态</strong><p>双耳、多字段的修改不是一个原子事务。若第三步失败，前两步可能已经完成。后续必须依据每项原值、响应和读回决定从哪里继续，不能把整组任务笼统写成“成功”或“完全没改”。</p></div>
+      </section>
 
-    <section class="closing shell"><div><span class="eyebrow">KEEP THE EVIDENCE. SHARE THE METHOD.</span><h2>让每一步，都有据可查。</h2></div><a class="button button-outline" href="https://github.com/JacksonsY/ab1571am-earbud-tools">在 GitHub 查看项目</a></section>
+      <section id="artwork">
+        <div class="section-label">05 / HOST RECOGNITION</div>
+        <h2>图片空白：参数正确之后，还要观察手机</h2>
+        <p>弹窗出现后，系统设置页顶部一度仍没有耳机和充电盒图片，同时有识别信息与菜单表现异常。如果继续把所有现象都归因于耳机配置，就容易在已经正确的参数上反复修改。</p>
+        <h3>这一阶段改变了什么</h3>
+        <ol class="process-list"><li><strong>核对设备端。</strong>先确认两耳相关配置已达到预期，而不是立刻增加新的写入。</li><li><strong>刷新手机识别。</strong>断开 Mac，在手机忽略该设备并重新配对。</li><li><strong>回到同一页面观察。</strong>耳机、充电盒图片及电量区域恢复显示。</li></ol>
+        <p>这一步删除并重建的是手机上的配对关系，不等同于耳机恢复出厂。该阶段没有追加 NVKEY 修改，也没有执行 MCU 刷写或软件复位。</p>
+        <div class="callout inferred"><strong>可以推断什么，不能推断什么</strong><p>前后对照支持“手机刷新配对或识别状态与图片恢复有关”。但本次没有读取手机内部缓存，不能宣称已经定位到某个具体缓存字段，也不能保证重新配对可以解决所有缺图问题。</p></div>
+        <p>同理，Mac 上一次 SDP 查询的结果不能被当作 iPhone 当前界面的唯一判据。它们是不同主机、不同时间点上的观察，应分别记录，而不是强迫一个探针结果解释全部现象。</p>
+      </section>
+
+      <section id="device-info">
+        <div class="section-label">06 / DEVICE INFO & RUNTIME CACHE</div>
+        <h2>Unknown：字段已经存在，为何仍不显示</h2>
+        <p>本样本原本已有型号字符串 <code>A3065</code> 和工厂序列号。系统显示 Unknown，不能直接解释为“设备里没有这些值”，也不意味着应该写入一个新序列号。</p>
+        <h3>第一层原因：整组信息上报被挡住</h3>
+        <p>静态分析显示，本构建中的 <code>FB00</code> 会影响 DeviceInfo 发送路径。关闭时，发送函数提前返回，整组设备信息不会沿该路径发出。因此，一个总开关就可以同时影响多个字段的显示。</p>
+        <pre class="code-block" tabindex="0" role="region" aria-label="设备信息上报的简化伪代码"><code>// 简化后的因果关系，不是完整设备信息协议实现
+if device_info_enabled == false:
+    return
+
+payload = build_from_existing_device_information()
+send_device_info(payload)  // 对应研究中的 0x001D 信息路径</code></pre>
+        <p>这里的 <code>0x001D</code> 属于固件面向主机的设备信息路径，与前文维护通道中的 RACE/NVKEY 命令不是同一层接口，不能直接互换使用。</p>
+        <p>这解释了为什么本次处理的是“已有信息的上报”，而不是改写型号、序列号或品牌身份。型号和原序列号保持原样。</p>
+        <h3>第二层原因：持久值与缓存不是同一个位置</h3>
+        <p>更新持久参数后，不能假定正在运行的固件立即重新加载了它。该构建存在已加载状态和 DeviceInfo 开关的运行副本，需要单独核对。</p>
+        <figure class="figure">
+          <div class="cache-word"><div><span>读取时的对齐字</span><code>[ loaded, old_flag, x, y ]</code></div><div><span>验证后准备写回</span><code>[ loaded, new_flag, x, y ]</code></div></div>
+          <figcaption>图 5 · 仅说明四字节读改写的保留原则。<code>x</code>、<code>y</code> 是符号占位，不是公开的真实设备数据。</figcaption>
+        </figure>
+        <p>使用字宽写入接口时，修改一个逻辑标志也可能触及同一个对齐字中的相邻字节。本次工具先确认精确固件身份和字段已加载，再两次读取同一个字，确认稳定后只替换目标字节，并比较完整读回。</p>
+        <p>缓存已经一致时无需重写；未知标志、未加载或读值变化时应停止。这个过程只适用于已确认的构建与位置，不能把固定地址移植到其他固件。</p>
+        <div class="callout observed"><strong>实机结果</strong><p>两耳的持久 <code>FB00</code> 和运行标志分别核对为开启状态，随后手机重新连接，设备所有者确认型号与原有序列号恢复显示。本次没有公开序列号内容，也没有通过伪造字段实现显示。</p></div>
+      </section>
+
+      <section id="case-sound">
+        <div class="section-label">07 / AN OPEN QUESTION</div>
+        <h2>充电盒声音：两种控制路径不能直接等同</h2>
+        <p>最后仍存在一个边界明确的未解决项：充电盒本身会响，伴侣 App 可以控制声音，但 iOS 的“启用充电盒声音”保持灰色。</p>
+        <figure class="figure">
+          <div class="control-path"><div><span class="path-label">已观察</span><strong>伴侣 App → 对应控制路径 → 充电盒声音</strong><p>所有者确认可以开关。</p></div><div><span class="path-label pending">未解决</span><strong>iOS 设置 → 能力与状态交互 → 原生声音开关</strong><p>开关仍灰；具体原因尚未定位。</p></div></div>
+          <figcaption>图 6 · 相同的最终硬件行为，可以由不同控制接口实现。一个接口有效，并不证明另一个接口已经适配。</figcaption>
+        </figure>
+        <p>Apple 官方说明原装 Pro 3 支持这个开关，并要求满足佩戴与连接等条件。Apple 社区中的 Pro 2 用户也报告过类似的灰色开关，但这些个案不能用来直接确定本样本的根因。<a class="reference" href="#ref-apple">[3]</a><a class="reference" href="#ref-community">[5]</a></p>
+        <p>外部协议研究可以提供控制命令线索，但“其他项目记录了一个控制码”不能证明当前固件实现了它。还需要确认具体接收路径、能力协商、状态返回以及盒子侧行为。<a class="reference" href="#ref-aap">[4]</a></p>
+        <div class="callout inferred"><strong>当前结论止于这里</strong><p>硬件声音功能和伴侣 App 的控制路径可用；iOS 原生控制未被本次修复。状态同步和协议适配都仍需进一步区分，本次没有为了让开关变亮而继续猜测参数。</p></div>
+      </section>
+
+      <section id="conclusions">
+        <div class="section-label">08 / VALIDATION & LIMITS</div>
+        <h2>哪些已经证明，哪些仍然没有证明</h2>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="验证结论与局限">
+          <table><caption>表 4 · 将验证结果与能力推断分开</caption><thead><tr><th>观察或检查</th><th>支持的结论</th><th>不能据此宣称</th></tr></thead><tbody>
+            <tr><td>命令响应和参数读回</td><td>指定操作按当前协议完成，目标值已读回。</td><td>手机 UI 和所有运行缓存一定同步改变。</td></tr>
+            <tr><td>弹窗与图片恢复</td><td>本样本在该手机环境中恢复了相应显示。</td><td>设备变成原装，或获得官方认证。</td></tr>
+            <tr><td>原有型号、序列号出现</td><td>已有设备信息的上报恢复。</td><td>显示出的文本足以独立验证真实性。</td></tr>
+            <tr><td>入口或开关可见</td><td>系统呈现了对应界面。</td><td>真实心率、精确查找或全部高级功能已实现。</td></tr>
+            <tr><td>离线自检通过</td><td>覆盖的解析和拒绝路径符合测试预期。</td><td>已经完成跨设备、跨平台或跨 agent 实机验证。</td></tr>
+          </tbody></table>
+        </div>
+        <p class="table-hint">表格较宽，窄屏可以左右滑动查看。</p>
+        <h3>可以迁移的是方法，不是写入值</h3>
+        <p>新设备适配应重新建立固件范围、报文布局、读取与写入条件、双耳行为和恢复依据。相同芯片或相似外壳，都不足以跳过这些步骤。</p>
+        <ol class="process-list compact"><li>为原始症状定义可观察的成功标准。</li><li>先取得只读证据，区分持久配置、缓存、上报与主机状态。</li><li>追踪 getter、setter 和调用者，不只搜索口令或常量。</li><li>仅在明确范围内作最小变更，逐项记录并读回。</li><li>回到真实 UI 和硬件验证，同时保留未验证事项。</li></ol>
+        <p>本次没有擦除或刷写 MCU，没有恢复出厂，也没有为验证回退流程而撤销已经成功的结果。原始私人材料不随公开页面分发，实机样本数量也不足以形成全系列兼容性保证。</p>
+        <p class="legal-note">研究和自用不自动构成法律免责。只操作本人合法持有或明确获授权的设备；公开时保护私有标识、密钥和第三方材料。项目的具体发布边界见<a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/PUBLICATION_AND_LEGAL.md">隐私与法律说明</a>。</p>
+      </section>
+
+      <section id="references">
+        <div class="section-label">09 / REFERENCES & REPRODUCTION</div>
+        <h2>资料、代码与进一步研究</h2>
+        <ol class="reference-list">
+          <li id="ref-code"><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/b09c2c2d44bdf6b63dfb7691da0ac48a5d8867ad/tools/inspect-earbud.swift">本项目的查询与受限修复实现</a><p>固定到首次工具发布对应的提交。可对照帧解析、peer 解包、固件校验、原值检查和缓存同步保护；代码本身不替代未公开的原始固件证据。</p></li>
+          <li id="ref-race"><a href="https://github.com/auracast-research/race-toolkit">RACE Toolkit 原研究项目</a><p>用于核对报文和传输接口。其通用能力不等于本样本或其他设备一定支持同样命令。</p></li>
+          <li id="ref-apple"><a href="https://support.apple.com/zh-cn/guide/airpods/dev57e5b7e58/27/web/27">Apple：更改 AirPods 设置</a><p>原装产品的行为对照，包括充电盒声音设置的使用条件，不是第三方设备的能力证明。</p></li>
+          <li id="ref-aap"><a href="https://github.com/kavishdevar/librepods/blob/main/docs/control_commands.md">LibrePods：控制命令研究</a><p>用于理解不同控制路径及其可能的实现需求，仍需独立确认目标固件行为。</p></li>
+          <li id="ref-community"><a href="https://discussions.apple.com/thread/255208727">Apple 社区：Pro 2 充电盒声音开关变灰</a><p>用户反馈仅用于提供线索，设备身份、具体环境和故障原因没有由本项目独立核验。</p></li>
+        </ol>
+        <div class="further-reading"><h3>继续阅读</h3><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/TOOLS.md">工具使用与本地验证步骤</a><a id="agent-prompts" href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/prompts/README.md">Claude Code / Codex 适配提示词</a><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/SOURCES.md">完整来源列表</a></div>
+      </section>
+    </article>
+
+    <footer class="article-footer"><p>独立研究记录，与 Apple、Airoha 或产品厂商无隶属或认证关系。</p><p>页面部署分支：<a href="https://github.com/JacksonsY/ab1571am-earbud-tools/tree/pages-research-notes">pages-research-notes</a> · <a href="#abstract">回到开头</a></p></footer>
   </main>
-  <footer class="site-footer shell"><div><a class="footer-brand" href="#">AB1571AM <span>EARBUD TOOLS</span></a><p>独立互操作性研究。与 Apple、Airoha 或产品厂商无隶属或认证关系。</p></div><div class="footer-right"><a href="https://github.com/JacksonsY/ab1571am-earbud-tools/blob/main/docs/PUBLICATION_AND_LEGAL.md">隐私与法律说明</a><span>FIELD NOTES · 2026.10</span></div></footer>
+</div>
 </body>
 </html>

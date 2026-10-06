@@ -2,7 +2,7 @@
 
 AB1571AM 耳机互操作性研究与 macOS 工具：弹窗、设备信息和双耳配置排查。
 
-**[访问项目网站](https://jacksonsy.github.io/ab1571am-earbud-tools/)** · 研究概览、交互式状态说明、工具下载与入门文档。
+**[阅读技术研究长文](https://jacksonsy.github.io/ab1571am-earbud-tools/)** · 报文、配置条件、双耳链路与主机识别的完整分析过程。
 
 本仓库提供可迁移的研究方法，并记录一副 AB1571AM 耳机上的验证案例。**研究方法可以复用，具体参数不能视为所有同芯片设备的通用设置。** 本项目与 Apple、Airoha 或耳机及伴侣应用厂商无隶属、合作或认证关系。
 
@@ -60,4 +60,6 @@ bash scripts/check.sh
 
 ## 网站维护
 
-GitHub Pages 从 `main` 分支的 `docs/` 发布静态站点，`.nojekyll` 禁用 Jekyll 处理。页面使用原生 HTML、CSS、JavaScript，不依赖外部字体或统计脚本。编辑 `docs/index.html`、`docs/site.css`、`docs/site.js` 后推送即可部署；本地预览可运行 `python3 -m http.server 8765 --directory docs`。更新工具发布版本时，也应核对页面中的版本、系统要求和下载链接。
+这个分支 `pages-research-notes` 专门维护研究型 GitHub Pages。页面从该分支的 `docs/` 发布，`.nojekyll` 禁用 Jekyll 处理；本次页面更新不合并到 `main`。
+
+页面使用原生 HTML、CSS、JavaScript，不依赖外部字体或统计脚本。编辑 `docs/index.html`、`docs/site.css`、`docs/site.js` 后，显式推送 `pages-research-notes` 分支即可部署；本地预览可运行 `python3 -m http.server 8765 --directory docs`。新增研究结论时应同时核对证据级别、适用范围和来源链接。
